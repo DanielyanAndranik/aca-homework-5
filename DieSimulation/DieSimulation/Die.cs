@@ -57,34 +57,47 @@ namespace DieSimulation
         public void Simulate(int count)
         {
             List<int> valuesList = new List<int>();
+            bool wasThePreviousSix = false;
 
             while(count != 0)
             {
                 int value = this.Roll();
                 Console.WriteLine(value);
 
+                valuesList.Add(value);
+
+                if(valuesList.Count() == 6)
+                {
+                    if(valuesList.Sum() - value >= 20)
+                    {
+                        SumIsGreater?.Invoke();
+                    }
+                    valuesList.RemoveRange(0, 5);
+                }
+                else if (valuesList.Count == 5)
+                {
+                    if (valuesList.Sum() >= 20)
+                    {
+                        SumIsGreater?.Invoke();
+                    }
+                    valuesList.Clear();
+                }
+ 
                 if (value == 6)
                 {
-                    if(valuesList.Count > 0 && valuesList[valuesList.Count - 1] == 6)
+                    if(wasThePreviousSix)
                     {
                         TwoSixesInARow?.Invoke();
                     }
+                    wasThePreviousSix = true;
                 }
-
-                if (valuesList.Count == 5)
+                else
                 {
-                    Shift(ref valuesList);
-                }
-
-                valuesList.Add(value);
-
-                if(valuesList.Sum() >= 20)
-                {
-                    SumIsGreater?.Invoke(); ;
+                    wasThePreviousSix = false;
                 }
                 count--;
 
-                Thread.Sleep(500);
+                Thread.Sleep(400);
             }
             EndOfTheProgram?.Invoke();
         }
@@ -96,19 +109,6 @@ namespace DieSimulation
         private int Roll()
         {
             return values[this.random.Next(0, values.Length)];
-        }
-
-        /// <summary>
-        /// Shifts the list to left.
-        /// </summary>
-        /// <param name="list">the list</param>
-        private static void Shift(ref List<int> list)
-        {
-            for(int i = 1; i < list.Count; i++)
-            {
-                list[i - 1] = list[i];
-            }
-            list.RemoveAt(list.Count - 1);
         }
 
     }
